@@ -1,1 +1,133 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Untitled RSS Feed]]></title><description><![CDATA[Untitled RSS Feed]]></description><link>https://ambarishpande.github.io/blog</link><generator>RSS for Node</generator><lastBuildDate>Thu, 24 Aug 2017 10:41:47 GMT</lastBuildDate><atom:link href="https://ambarishpande.github.io/blog/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title><![CDATA[Test Post]]></title><link>https://ambarishpande.github.io/blog/2017/08/24/Test-Post.html</link><guid isPermaLink="true">https://ambarishpande.github.io/blog/2017/08/24/Test-Post.html</guid><dc:creator><![CDATA[Ambarish Pande]]></dc:creator><pubDate>Thu, 24 Aug 2017 00:00:00 GMT</pubDate></item></channel></rss>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Untitled RSS Feed]]></title><description><![CDATA[Untitled RSS Feed]]></description><link>https://ambarishpande.github.io/blog</link><generator>RSS for Node</generator><lastBuildDate>Thu, 24 Aug 2017 11:00:45 GMT</lastBuildDate><atom:link href="https://ambarishpande.github.io/blog/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title><![CDATA[Drools workbench and Nexus with Docker.]]></title><description><![CDATA[<div class="sect1">
+<h2 id="_step_1_setup_nexus_docker_container">Step 1: Setup Nexus docker container</h2>
+<div class="sectionbody">
+<div class="literalblock">
+<div class="content">
+<pre>$ docker pull sonatype/nexus
+$ docker run -d -p 8081:8081 --name nexus sonatype/nexus:oss</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Verify that the container is up and running.
+Note the ip address of the container.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_step_2_modify_drools_workbench_dockerfile_to_include_maven_settings_xml_in_the_container">Step 2: Modify Drools-workbench dockerfile to include maven settings.xml in the container.</h2>
+<div class="sectionbody">
+<div class="literalblock">
+<div class="content">
+<pre>$ git clone https://github.com/jboss-dockerfiles/drools.git
+$ cd drools/drools-wb/showcase/etc/
+$ nano settings.xml
+&lt;settings&gt;
+&lt;localRepository&gt;${env.HOME}/.m2/repository&lt;/localRepository&gt;
+  &lt;servers&gt;
+    &lt;server&gt;
+          &lt;id&gt;workbench&lt;/id&gt; &lt;!-- Specify this in project pom --&gt;
+          &lt;username&gt;deployment&lt;/username&gt;
+          &lt;password&gt;deployment123&lt;/password&gt;
+          &lt;configuration&gt;
+            &lt;wagonProvider&gt;httpclient&lt;/wagonProvider&gt;
+                &lt;httpConfiguration&gt;
+                      &lt;all&gt;
+                            &lt;usePreemptive&gt;true&lt;/usePreemptive&gt;
+                      &lt;/all&gt;
+                &lt;/httpConfiguration&gt;
+          &lt;/configuration&gt;
+    &lt;/server&gt;
+  &lt;/servers&gt;
+&lt;/settings&gt;</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ cd ..
+$ nano Dockerfile</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Add this line in Drools Workbench Custom Configuration section</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>RUN mkdir -p $HOME/.m2
+ADD etc/settings.xml $JBOSS_HOME/../.m2/settings.xml</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Add this line in  Added files are chowned.. Section</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre> &amp;&amp; \
+chown jboss:jboss $JBOSS_HOME/../.m2/settings.xml</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Save and close</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ ./build.sh</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_step3_run_the_drools_workbench_docker_container">Step3 : Run the drools-workbench docker container</h2>
+<div class="sectionbody">
+<div class="literalblock">
+<div class="content">
+<pre>$ docker run -p 8080:8080 -p 8001:8001 -d --name drools-workbench jboss/drools-workbench-showcase:latest ( or your own tag )</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_step_4_create_a_project_in_the_drools_workbench_ui">Step 4: Create a project in the drools workbench ui</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Got to <strong>localhost:8080/drools-wb</strong><br>
+Login using admin:admin<br>
+Go to <strong>Authoring&gt;Project Authoring</strong> and create a project.<br>
+Go to the <strong>Authoring&gt;Administration&gt;Repositories</strong> and add the following to the pom.xml</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>&lt;distributionManagement&gt;
+   &lt;repository&gt;
+   	&lt;id&gt;workbench&lt;/id&gt;
+       &lt;name&gt;Workbench&lt;/name&gt;
+       &lt;url&gt;http://nexus_ip:8081/nexus/content/repositories/releases/&lt;/url&gt;
+   &lt;/repository&gt;
+   &lt;snapshotRepository&gt;
+   	&lt;id&gt;workbench-snapshot&lt;/id&gt;
+       &lt;name&gt;Workbench Snapshot&lt;/name&gt;
+       &lt;url&gt;http://nexus_ip:8081/nexus/content/repositories/snapshots/&lt;/url&gt;
+   &lt;/snapshotRepository&gt;
+ &lt;/distributionManagement&gt;</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_step_5_build_and_deploy">Step 5: Build and Deploy</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Go to <strong>Authoring&gt;Project Authoring</strong> and select your project.<br>
+Click on <strong>Build and Deploy</strong> button on the top right.<br>
+Your artifacts should be published to the configured nexus.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_for_non_docker_standalone">For Non docker ( Standalone ) :</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Modify ~/.m2/settings.xml to include the lines shown in step 2.<br>
+And also follow step 4.</p>
+</div>
+</div>
+</div>]]></description><link>https://ambarishpande.github.io/blog/2017/08/24/Drools-workbench-and-Nexus-with-Docker.html</link><guid isPermaLink="true">https://ambarishpande.github.io/blog/2017/08/24/Drools-workbench-and-Nexus-with-Docker.html</guid><dc:creator><![CDATA[Ambarish Pande]]></dc:creator><pubDate>Thu, 24 Aug 2017 00:00:00 GMT</pubDate></item></channel></rss>
