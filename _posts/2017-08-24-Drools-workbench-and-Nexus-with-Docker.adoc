@@ -1,0 +1,93 @@
+// = Your Blog title
+// See https://hubpress.gitbooks.io/hubpress-knowledgebase/content/ for information about the parameters.
+// :hp-image: /covers/cover.png
+// :published_at: 2019-01-31
+:hp-tags: Docker, Drools Workbench, Kie Workbench, Nexus, maven
+// :hp-alt-title: My English Title
+= Drools workbench and Nexus with Docker.
+
+This tutorial will help you to setup drools workbench ui to publish artifacts to a custom nexus repository particularly if you are using both these services in docker containers.
+
+== Step 1: Setup Nexus docker container
+    
+    $ docker pull sonatype/nexus
+    $ docker run -d -p 8081:8081 --name nexus sonatype/nexus:oss
+    
+Verify that the container is up and running.
+Note the ip address of the container.
+
+== Step 2: Modify Drools-workbench dockerfile to include maven settings.xml in the container.
+    
+ $ git clone https://github.com/jboss-dockerfiles/drools.git
+ $ cd drools/drools-wb/showcase/etc/
+ $ nano settings.xml
+ <settings>
+ <localRepository>${env.HOME}/.m2/repository</localRepository>
+   <servers>
+     <server>
+           <id>workbench</id> <!-- Specify this in project pom -->
+           <username>deployment</username>
+           <password>deployment123</password>
+           <configuration>
+             <wagonProvider>httpclient</wagonProvider>
+                 <httpConfiguration>
+                       <all>
+                             <usePreemptive>true</usePreemptive>
+                       </all>
+                 </httpConfiguration>
+           </configuration>
+     </server>
+   </servers>
+ </settings>
+
+ $ cd ..
+ $ nano Dockerfile
+    
+Add this line in Drools Workbench Custom Configuration section
+
+ RUN mkdir -p $HOME/.m2
+ ADD etc/settings.xml $JBOSS_HOME/../.m2/settings.xml
+
+Add this line in  Added files are chowned.. Section
+
+ && \
+chown jboss:jboss $JBOSS_HOME/../.m2/settings.xml
+
+Save and close
+
+ $ ./build.sh
+ 
+== Step3 : Run the drools-workbench docker container
+    
+    $ docker run -p 8080:8080 -p 8001:8001 -d --name drools-workbench jboss/drools-workbench-showcase:latest ( or your own tag )
+
+== Step 4: Create a project in the drools workbench ui
+Got to *localhost:8080/drools-wb*	+
+Login using admin:admin	+
+Go to *Authoring>Project Authoring* and create a project.	+
+Go to the *Authoring>Administration>Repositories* and add the following to the pom.xml
+
+ <distributionManagement>
+	   <repository>
+    	<id>workbench</id>
+        <name>Workbench</name>
+        <url>http://nexus_ip:8081/nexus/content/repositories/releases/</url>
+    </repository>
+    <snapshotRepository>
+    	<id>workbench-snapshot</id>
+        <name>Workbench Snapshot</name>
+        <url>http://nexus_ip:8081/nexus/content/repositories/snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+== Step 5: Build and Deploy
+Go to *Authoring>Project Authoring* and select your project.	+
+Click on *Build and Deploy* button on the top right.	+
+Your artifacts should be published to the configured nexus.
+
+
+
+
+== For Non docker ( Standalone ) :
+Modify ~/.m2/settings.xml to include the lines shown in step 2.	+
+And also follow step 4.
