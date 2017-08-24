@@ -5,6 +5,22 @@
     "branch": "gh-pages"
   },
   "theme": {
-    "name": "Casper"
+    "name": "casper"
+  },
+  "urls": {
+    "site": "https://ambarishpande.github.io/blog",
+    "hubpress": "https://ambarishpande.github.io/blog",
+    "theme": "//ambarishpande.github.io/blog/themes/casper",
+    "images": "https://ambarishpande.github.io/blog/images"
+  },
+  "initialisationConfigComponent": {
+    "name": "initialise-configuration",
+    "computed": {},
+    "methods": {},
+    "staticRenderFns": [
+      null,
+      null,
+      null
+    ]
   }
 }
