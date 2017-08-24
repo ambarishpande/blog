@@ -2,7 +2,8 @@
   "meta": {
     "username": "ambarishpande",
     "repositoryName": "blog",
-    "branch": "gh-pages"
+    "branch": "gh-pages",
+    "cname": ""
   },
   "theme": {
     "name": "casper"
@@ -22,5 +23,27 @@
       null,
       null
     ]
+  },
+  "site": {
+    "title": ".__| Tech and Me |__.",
+    "description": "",
+    "logo": "",
+    "cover": "https://github.com/ambarishpande/ambarishpande.github.io/blob/master/assets/images/bg1.png",
+    "delay": "",
+    "postsPerPage": "",
+    "googleAnalytics": "UA-34497069-3",
+    "disqus": "ambarishpande-github-io"
+  },
+  "socialnetwork": {
+    "email": "ambarish.pande2011@gmail.com",
+    "github": "https://github.com/ambarishpande",
+    "twitter": "https://twitter.com/ambarishpande",
+    "facebook": "https://www.facebook.com/ambarish.pande",
+    "googleplus": "",
+    "instagram": "",
+    "pinterest": "",
+    "flickr": "",
+    "linkedin": "https://www.linkedin.com/in/ambarishpande",
+    "stackoverflow": ""
   }
 }
