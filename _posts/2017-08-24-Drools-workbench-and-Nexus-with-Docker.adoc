@@ -2,9 +2,10 @@
 // See https://hubpress.gitbooks.io/hubpress-knowledgebase/content/ for information about the parameters.
 // :hp-image: /covers/cover.png
 // :published_at: 2019-01-31
-// :hp-tags: HubPress, Blog, Open_Source,
+:hp-tags: Docker, Drools Workbench, Kie Workbench, Nexus, maven
 // :hp-alt-title: My English Title
 = Drools workbench and Nexus with Docker.
+
 This tutorial will help you to setup drools workbench ui to publish artifacts to a custom nexus repository particularly if you are using both these services in docker containers.
 
 == Step 1: Setup Nexus docker container
